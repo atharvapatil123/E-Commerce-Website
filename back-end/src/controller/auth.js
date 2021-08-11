@@ -1,15 +1,19 @@
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
+const { validationResult } = require("express-validator");
 
 exports.signup = (req, res) => {
+
+  const errors = validationResult(req);
+  return res.status(400).json({errors: errors.array()})
+
   User.findOne({ email: req.body.email }).exec((error, user) => {
     if (user)
       return res.status(400).json({
         message: "User already registered",
       });
 
-    const { firstName, lastName, email, password, userName} =
-      req.body;
+    const { firstName, lastName, email, password, userName } = req.body;
     const _user = new User({
       firstName,
       lastName,
@@ -67,10 +71,10 @@ exports.signin = (req, res) => {
   });
 };
 
-exports.requireSignin = (req, res, next) =>{
+exports.requireSignin = (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
-  const user = jwt.verify(token, process.env.JWT_SECRET)
+  const user = jwt.verify(token, process.env.JWT_SECRET);
   req.user = user;
   // console.log(token)
   next();
-}
+};
